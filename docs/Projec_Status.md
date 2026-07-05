@@ -2,132 +2,125 @@
 
 ## Current Project Position
 
-当前项目处于 **弱联场景分类指标验证阶段**，暂不进入恢复调度算法设计阶段。
+项目当前处于 **正式仿真可信性加固阶段**，而不是算法性能冲刺阶段。
 
-当前核心任务不是证明某个调度算法更优，而是验证：
-
-> 我们提出的弱联场景分类指标，是否能够科学、稳定、可解释地区分 low / medium / high 弱联场景。
-
-最新代码版本为：
+当前代码基线为：
 
 ```text
-v0.5.1: Power-topology-aware weak-link scenario validation
+weaklink_restoration_current_clean_progress
 ```
 
-该版本相较 v0.5 的核心变化是：
+该版本基于 v0.8.6 Electrical Audit Hardening，并进一步完成了代码清理与运行进度显示：
 
-* 引入可插拔电网拓扑接口 `PowerCase`；
-* 将电网拓扑信息正式接入弱联指标体系；
-* 区分候选故障池与实际 active fault set；
-* 支持随机 active fault set 生成；
-* 引入 moderate / severe 两级弱联激活概率；
-* 新增场景指标验证报告；
-* 新增权重敏感性分析脚本。
+* 删除旧版本 run 脚本、旧说明文档、历史 results 目录；
+* 保留当前正式流程所需的 `configs/`、`data/`、`src/` 和主运行入口；
+* 新增简洁入口：
 
-当前默认实验仍使用 `feeder_51` 作为基础电网，但代码结构已支持后续扩展 IEEE33、case69 或真实馈线。
+  * `run_smoke.py`
+  * `run_h10.py`
+  * `run_h20.py`
+  * `run_h50.py`
+* 主程序 `run_realistic_power_eval.py` 已加入进度显示，包括完成比例、已耗时、平均耗时和 ETA。
+
+当前阶段目标是：**先确认仿真平台、数据、电气审计、求解器状态和结果输出口径可信，再进入算法增强。**
 
 ---
 
 ## Confirmed Research Direction
 
-本项目不是对已有 EPSR 论文进行简单约束叠加、车辆类型扩展或算例规模放大。
+当前研究方向保持为：
 
-当前确认的研究方向是：
+```text
+弱联交通—配电耦合灾后恢复中，面向资源可达性错配的临时—永久协同恢复调度研究。
+```
 
-> 将“弱联”从农村/山区等背景性描述，提升为交通–配电–资源耦合系统中的可计算、可比较、可生成、可验证的结构性与灾害响应性属性。
+当前方法雏形为：
 
-弱联应理解为以下系统特征的组合：
+```text
+弱联感知的临时—永久协同分阶段滚动恢复优化方法
+```
 
-* 低冗余；
-* 低可替代性；
-* 高瓶颈依赖；
-* 关键资源可达延迟；
-* 资源机动性与维修能力错配；
-* 临时恢复与永久修复之间存在阶段性断裂。
+核心机制包括：
 
-后续算法阶段不应被表述为“低自由度路径优化”，而应聚焦于低冗余系统中的高代价恢复决策，包括：
+1. 弱联结构量化；
+2. 轻装/重装资源可达性错配建模；
+3. temporary / permanent 恢复动作区分；
+4. power-aware AUC-oriented rolling score；
+5. service restoration / cleanup phase 分阶段；
+6. full-repair no-action guard；
+7. solver / data / AC audit guardrails。
 
-* 瓶颈排序；
-* 资源匹配；
-* 阶段协同；
-* 等待与转移决策；
-* 临时恢复与永久修复方式选择。
-
-当前阶段的研究重点是：**验证弱联场景分类指标是否合理，而不是优化恢复调度算法。**
+当前不把方法表述为完整潮流约束 MILP。当前 rolling MILP 本质仍是 **power-aware rolling assignment MILP**，不是完整配电网潮流约束恢复优化模型。
 
 ---
 
 ## Key Conclusions
 
-1. v0.5 在 hazard seeds 增加到 50 后，low / medium / high 三类弱联场景能够明显分开，说明交通弱联、资源可达延迟和受限耦合显化指标具有初步有效性。
+1. **v0.8.5 已证明 phase-separated rolling 机制有效。**
+   相比 v0.8.4，修复了 high 场景 no-action / full-repair 不完成问题，并使 rolling 在 high/medium 的 total outage AUC 上具备竞争力。
 
-2. 但 v0.5 的随机性主要集中在交通层；电网拓扑、故障点集合、电网–交通基础映射均固定。因此，v0.5 只能部分验证弱联场景分类指标，不能完整证明整个弱联场景体系合理。
+2. **h10 结果显示不同强 baseline 差距不大。**
+   rolling、PA-WTLA-C、power critical / capability 等方法在不同指标上各有胜负，不能当前就宣称新算法全面显著优于所有 baseline。
 
-3. 当前已确认：若研究目标是验证场景分类指标合理性，则代码必须至少覆盖：
+3. **当前更合理的论文路线是“场景机制 + 方法 + 诊断分析”联合型。**
+   重点不应只放在算法碾压，而应说明：弱联强度、资源可达性错配、temporary-permanent 协同、critical-load trade-off 如何影响不同策略表现。
 
-   * 交通结构变化；
-   * 交通灾害随机性；
-   * 随机 active fault set；
-   * 电网拓扑感知的故障重要性；
-   * 电网侧故障重要性与交通侧可达瓶颈共同构成的耦合指标。
+4. **仿真可信性仍是当前优先级最高的问题。**
+   需要先封住 power-case 数据、pandapower 建模单位、temporary AC 语义、event-level AC audit 和 solver 状态等风险。
 
-4. v0.5.1 已引入 `PowerCase` 接口，将电网边、电网节点、候选故障池和故障–交通任务映射统一组织到 power case 目录中。
-
-5. v0.5.1 已加入拓扑感知电网指标，包括：
-
-   * 故障边深度；
-   * 下游负荷占比；
-   * 下游关键负荷占比；
-   * 电网瓶颈依赖度；
-   * power fault importance；
-   * topology-based restoration value。
-
-6. v0.5.1 已支持 `random_subset` active fault generation，使每个 hazard seed 不再必须使用同一组固定故障点。
-
-7. 两级激活概率比原先单一 0.30 阈值更合理：
-
-   * low 场景基本不激活；
-   * medium 场景出现 moderate activation；
-   * high 场景同时出现 moderate 和 severe activation。
-
-8. 当前不急于随机生成大量电网拓扑。更稳妥的路线是：先完成可插拔电网拓扑接口与拓扑感知指标，再逐步扩展 IEEE33、case69 或真实馈线作为泛化验证。
+5. **v0.8.6 / clean-progress 版已加固电气审计层。**
+   已修复 base voltage 字段读取、线路电流单位处理，增加严格 power-case validation、temporary unmodeled flag、event AC mark mode，并加入运行进度 ETA。
 
 ---
 
 ## Current Risks
 
-1. **单一电网拓扑风险**
-   当前默认实验仍只使用 `feeder_51`。虽然电网拓扑已进入指标计算，但跨电网拓扑泛化能力尚未验证。
+1. **power-case 数据存在严格校验 error。**
+   当前 validator 会暴露 very low power factor、missing length、extreme x/r 等问题。正式仿真前必须人工确认或修复。
 
-2. **场景分类被生成器驱动的风险**
-   low / medium / high 的区分可能仍部分来自场景生成器设定。需要通过随机故障集合、不同故障数量、权重敏感性和后续多电网拓扑实验进一步验证。
+2. **temporary restoration 仍未被真实 AC 建模。**
+   当前 `temporary_ac_model = "none"`，temporary 恢复收益仍是 proxy restoration，尚未转换为临时线路、移动电源或局部负荷 pickup 的物理模型。
 
-3. **空间相关灾害不足风险**
-   当前 `spatial_correlated` 仍处于预留或简化状态，尚未形成严格的道路损伤与电网故障共享空间灾害场。
+3. **event AC audit 当前仍是 mark/audit，不是 reject。**
+   即使发现中间 AC 不可行，目前只标记，不会回退动作、拒绝动作或修正恢复曲线。
 
-4. **耦合映射固定风险**
-   默认模式下，电网故障边到交通任务点的映射仍是固定的。后续需要支持空间相关映射或瓶颈对齐映射，但不宜立即使用完全随机映射作为主实验。
+4. **rolling MILP 仍缺少电力约束。**
+   当前不是 LinDistFlow / DistFlow / AC-constrained MILP，不能宣称为完整电力约束优化。
 
-5. **电网结构弱联仍可能不区分**
-   在单一 `feeder_51` 下，结构级 `power_structural_weakness` 可能仍然相同。这不是当前阶段的致命问题，但后续若要声称电网弱联也参与 low / medium / high 主分类，需要接入多个 power cases 或生成不同电网弱联变体。
+5. **算法优势尚未充分确立。**
+   h10 样本显示差距较小，必须通过 h20/h50、paired win-rate、high-mismatch subset、temporary/critical 诊断进一步判断方法贡献强度。
 
 ---
 
 ## Immediate Next Tasks
 
-1. 本地运行 v0.5.1，确认 `run_quick_check.py`、`run_v051.py`、`run_validate_scenario_metrics.py`、`run_weight_sensitivity.py` 均能正常运行。
+1. 本地运行 clean-progress 版：
 
-2. 分析 v0.5.1 默认 h50 结果，重点检查：
+```bash
+python run_h10.py
+```
 
-   * low / medium / high 是否仍保持有序；
-   * random active fault set 是否破坏分类稳定性；
-   * moderate / severe activation 是否符合预期；
-   * active fault count 是否合理变化；
-   * power topology metrics 是否真正进入 active fault 与 manifestation 指标；
-   * 权重敏感性是否稳定。
+2. 检查输出：
 
-3. 下一步优先补充不同故障数量实验，检验弱联指标是否被灾害规模主导。
+```text
+raw/power_case_validation_report.csv
+raw/ac_event_validation_report.csv
+raw/ac_validation_report.csv
+raw/rolling_milp_solver_report.csv
+summary/realistic_policy_summary.csv
+summary/realistic_paired_report.csv
+```
 
-4. 后续再推进更真实的 spatially correlated disaster generation。
+3. 优先判断：
 
-5. 在 v0.5.1 稳定后，再考虑接入第二个 power case，例如 IEEE33 或 case69，用于检验指标体系的跨电网泛化能力。
+* CPLEX 是否全 optimal；
+* event AC audit 本地是否 available；
+* event AC violation 是否为 0；
+* temporary_unmodeled_rate 在 high/medium/low 中多高；
+* power-case validation error 是否需要修复数据；
+* clean-progress 版性能是否与 v0.8.5 / v0.8.6 保持一致。
+
+4. 若 h10 通过，再运行 h20。
+   h20 稳定后再考虑 h50。
+
+5. 在仿真可信性闭环前，暂缓大规模算法调参。
