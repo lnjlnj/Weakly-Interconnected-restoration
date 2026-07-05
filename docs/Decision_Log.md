@@ -1,29 +1,25 @@
 # Decision_Log.md
 
-Date: 2026-07-01
-Decision: 当前阶段明确定位为“弱联场景分类指标验证”，暂不进入恢复调度算法设计。
-Reason: 现阶段最关键的问题是证明 low / medium / high 弱联场景分类指标是否合理、稳定、可解释，而不是证明某个调度算法效果更好。
+Date: 2026-07-05
+Decision: 当前阶段优先继续加固正式仿真可信性，而不是立刻全力优化算法性能。
+Reason: h10 结果显示 rolling、PA-WTLA-C、power critical / capability 等强 baseline 差距不大；若仿真平台、数据、电气审计和 temporary 语义未完全可信，继续调算法可能得到不可靠的性能提升。
 
-Date: 2026-07-01
-Decision: v0.5 结果只能作为部分验证，不能视为完整验证弱联场景体系。
-Reason: v0.5 中电网拓扑、故障点集合、电网–交通基础映射均固定，随机性主要来自交通层灾害，因此只能验证交通弱联、资源可达延迟和受限耦合显化指标。
+Date: 2026-07-05
+Decision: 将当前方法定位为“弱联感知的临时—永久协同分阶段滚动恢复优化方法”，而不是完整电力约束 MILP。
+Reason: 当前 CPLEX 模型仍主要是 rolling assignment MILP，缺少显式潮流、电压、线路容量、电源容量等电力约束；必须避免方法表述过度。
 
-Date: 2026-07-01
-Decision: 推进 v0.5.1，加入可插拔电网拓扑接口与拓扑感知电网指标。
-Reason: 若弱联指标体系包含电网弱联、交通弱联、耦合弱联和资源弱联，则电网拓扑不能长期只作为固定背景或任务价值 proxy，必须进入指标计算框架。
+Date: 2026-07-05
+Decision: 推进 v0.8.6 Electrical Audit Hardening。
+Reason: 需要修复 pandapower base voltage 字段读取、线路电流单位处理，升级 power-case validation 严重等级，并显式记录 temporary restoration 尚未 AC 建模的事实。
 
-Date: 2026-07-01
-Decision: 在 v0.5.1 中区分候选故障池与实际 active fault set，并支持 random_subset 故障生成。
-Reason: 固定故障点无法验证弱联分类在随机电网故障扰动下是否稳定；随机 active fault set 是检验场景分类指标合理性的必要步骤。
+Date: 2026-07-05
+Decision: 在 event-level AC audit 中引入 mark 语义，但暂不引入 reject / candidate AC filter。
+Reason: 当前 temporary AC 物理语义尚未定义清楚，直接 reject 可能把不成熟的 AC audit 变成强约束，风险较高。
 
-Date: 2026-07-01
-Decision: 暂不随机生成大量电网拓扑，而是先支持 power case 可插拔。
-Reason: 随机生成配电网拓扑容易产生不符合配电网物理结构的图；更稳妥的方式是先支持 feeder_51、IEEE33、case69 或真实馈线等可解释算例。
+Date: 2026-07-05
+Decision: 整理当前代码为 clean-progress 版，删除旧版本脚本、旧说明和历史结果目录。
+Reason: 历史版本文件过多，容易混淆当前正式仿真入口和结果目录；清理后便于本地运行、结果复现和后续维护。
 
-Date: 2026-07-01
-Decision: 将 activation probability 从单一强激活阈值改为 moderate / severe 两级激活概率。
-Reason: 单一 0.30 阈值过硬，导致 medium 场景激活信息不足；两级激活能更合理地区分中等弱联显化和强弱联显化。
-
-Date: 2026-07-01
-Decision: 新增场景指标验证报告和权重敏感性分析。
-Reason: 当前目标是验证指标体系本身，因此必须自动检查单调性、分类重叠、匹配率、激活合理性、故障数量影响和权重扰动稳定性。
+Date: 2026-07-05
+Decision: 在主仿真循环中加入进度显示和 ETA。
+Reason: h10/h20/h50 本地运行时间较长，需要在控制台显示完成比例、已耗时、平均耗时和预计剩余时间，方便用户判断运行进度。
