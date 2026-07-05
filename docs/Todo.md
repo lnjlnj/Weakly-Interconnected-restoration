@@ -1,28 +1,20 @@
-P0
-本地运行 weaklink_restoration_v051.zip，确认完整流程可运行。
-检查 v0.5.1 默认 h50 输出结果：
-structural_metrics.csv
-hazard_manifestation_metrics.csv
-weaklink_response_profile.csv
-weaklink_classification.csv
-metric_validation_report.csv
-weight_sensitivity.csv
-active_fault_tasks.csv
-power_edge_metrics.csv
-分析 random active fault set 下 low / medium / high 是否仍稳定分开。
-检查 moderate / severe activation probability 是否符合预期。
-检查权重敏感性结果，确认分类不是由单一权重设置偶然产生。
-P1
-增加不同 active fault count 实验，区分“灾害规模”与“结构弱联”。
-完善 spatial_correlated 灾害生成逻辑，使道路损伤与电网故障共享空间灾害场。
-优化 coupling metric，使其更明确地结合：
-power fault importance；
-traffic path scarcity；
-bottleneck overlap；
-vehicle-type-specific accessibility delay。
-整理 v0.5.1 指标体系说明文档，明确每个指标的物理含义和作用边界。
-P2
-接入第二个 power case，例如 IEEE33 或 case69。
-设计多电网拓扑下的泛化验证实验。
-在弱联场景分类指标稳定后，再回到恢复调度算法设计。
-后续算法重点应放在瓶颈排序、资源匹配、阶段协同、临时/永久恢复选择，而不是单纯路径搜索
+p0
+1. 本地运行 clean-progress 版 h10：python run_h10.py
+2. 检查 CPLEX 是否全 optimal，确认 fallback=False、invalid_solve=0
+3. 检查 power_case_validation_report.csv，重点处理 very low PF、missing length、extreme x/r、max current unit
+4. 检查 event AC audit 本地是否 available，确认 event_ac_audit_available_rate=1
+5. 检查 temporary_unmodeled_rate，明确 temporary proxy 对结果的影响范围
+
+p1
+1. 若 h10 通过，运行 h20，确认趋势稳定
+2. 做 rolling vs PA-WTLA-C / power critical 的 paired win-rate 分析
+3. 做 high-mismatch subset 分析，而不是只看 high/medium/low 均值
+4. 诊断 temporary 使用不足和 critical AUC48 不占优的原因
+5. 根据 power-case validation 结果决定是否修数据或调整 validation 阈值
+
+p2
+1. 设计 temporary_ac_model 的物理含义：none / line_derating / mobile_generator / load_pickup
+2. 设计 AC-corrected restoration metrics
+3. 评估 candidate AC filter 的计算成本和必要性
+4. 中期准备 LinDistFlow rolling MILP，但暂不进入当前版本
+5. 整理方法命名、机制图和实验诊断框架
